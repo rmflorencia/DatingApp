@@ -1,12 +1,18 @@
+using System.Text;
 using API.Data;
+using API.Interfaces;
+using API.Services;
+using API.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
- 
- public class Startup
+using Microsoft.IdentityModel.Tokens;
+
+public class Startup
 
     {
         private readonly IConfiguration configuration;
@@ -20,14 +26,11 @@ using Microsoft.Extensions.Hosting;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddDbContext<DataContext>(options =>
-            {
-                options.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
-            });
-
+        {          
+            services.AddApplicationServices(configuration);
             services.AddControllers();
             services.AddCors();
+            services.AddIdentityServices(configuration);              
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,6 +47,8 @@ using Microsoft.Extensions.Hosting;
 
             app.UseCors(policy => policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200"));
 
+            app.UseAuthentication();
+            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
